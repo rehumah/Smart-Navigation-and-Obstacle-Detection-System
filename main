@@ -1,0 +1,253 @@
+#include <Ultrasonic.h>
+#include <Keypad.h>
+#include <SPI.h>
+#include <RFID.h>
+#include <SoftwareSerial.h> // Needed by the EMIC2 library
+#include "EMIC2.h"
+
+//ultrasonic sensor
+#define trigPin 33
+#define echoPin 31
+
+//Defining the emic pins
+#define RX_PIN 10 // Connect SOUT pin of the Emic 2 module to the RX pin
+#define TX_PIN 11 // Connect SIN pin of the Emic 2 module to the TX pin
+
+EMIC2 emic; // Creates an instance of the EMIC2 library
+
+//Rfid configuration
+#define SS_PIN 53
+#define RST_PIN 22
+
+
+RFID rfid(SS_PIN, RST_PIN);
+
+// Setup variables:
+int serNum0;
+int serNum1;
+int serNum2;
+int serNum3;
+int serNum4;
+
+// keypad config
+const byte ROWS = 4; //four rows
+const byte COLS = 4; //four columns
+//define the cymbols on the buttons of the keypads
+char hexaKeys[ROWS][COLS] = {
+{'1','2','3','A'},
+{'4','5','6','B'},
+{'7','8','9','C'},
+{'*','0','#','D'}
+};
+byte rowPins[ROWS] = {2, 3, 4, 5}; //connect to the row pinouts of the
+keypad
+byte colPins[COLS] = {6, 7, 8, 9 }; //connect to the column pinouts of the
+keypad
+
+
+//initialize an instance of class NewKeypad
+Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins,
+colPins, ROWS, COLS);
+
+void setup()
+{
+// Initializes the EMIC2 instance
+// The library sets up a SoftwareSerial port
+// for the communication with the Emic 2 module
+emic.begin(RX_PIN, TX_PIN);
+
+// emic.setVoice(8); // Sets the voice (9 choices: 0 - 8
+emic.setLanguage(5); //set the language
+emic.setRate(200); //set the rate of speech
+emic.setVolume(10);//set the volume
+
+Serial.begin(9600);
+SPI.begin();
+rfid.init();
+Serial.print("Read card..... ");
+emic.speak("please Scan a tag");
+}
+
+
+void loop()
+{
+//setting-up keypad
+char customKey = customKeypad.getKey();
+if (customKey != NO_KEY ){
+
+if (customKey == '1' ){
+emic.setRate(200);
+Serial.println("\n Your destination is room 2-tag 2" );
+
+emic.setVolume(10);
+emic.speak(" Your destination is room 2");
+
+emic.speak(" if yes? kindly wait for an instruction to your destination");
+emic.speak(" if no? choose the right destination");
+emic.setRate(80);
+emic.speak("Now move four steps steps forward,and you have reached
+room 2");
+}
+if (customKey == '2' ){
+emic.setRate(200);
+Serial.println("\n Your destination is room 3-tag 3" );
+
+emic.setVolume(10);
+
+
+emic.speak(" Your destination is room 3");
+emic.speak(" if yes? kindly wait for an instruction to your destination");
+emic.speak(" if no? kindly choose a different destination");
+emic.setRate(80);
+emic.speak("now move two steps forward,and you have reached room
+3");
+}
+if (customKey == '3' ){
+emic.setRate(200);
+Serial.println("\n Your destination is room 4-tag 4" );
+
+emic.setVolume(10);
+emic.speak(" Your destination is room 4");
+emic.speak(" if yes? kindly wait for an instruction to your destination");
+emic.speak(" if no? kindly choose a different destination");
+emic.setRate(80);
+emic.speak("now move one steps forward,and you have reached room
+4");
+}
+if (customKey == 'A' ){
+emic.setRate(200);
+Serial.println("\n Your destination is room 5-tag 5" );
+
+emic.setVolume(10);
+emic.speak(" Your destination is room 5");
+
+
+emic.speak(" if yes? kindly wait for an instruction to your destination");
+emic.speak(" if no? kindly choose a different destination");
+emic.setRate(80);
+emic.speak("now move two steps forward,and you have reached room
+5");
+}
+if (customKey == '4' ){
+emic.setRate(200);
+Serial.println("\n Your destination is room 6-tag 6" );
+
+emic.setVolume(10);
+emic.speak(" Your destination is room 6");
+emic.speak(" if yes? kindly wait for an instruction to your destination");
+emic.speak(" if no? kindly choose a different destination");
+emic.setRate(80);
+emic.speak("now move two steps forward,and you have reached room
+6");
+}
+if (customKey == '5' ){
+emic.setRate(200);
+Serial.println("\n Your destination is washroom-tag 7" );
+
+emic.setVolume(10);
+emic.speak(" Your destination is the washroom");
+emic.speak(" if yes? kindly wait for an instruction to your destination");
+
+
+emic.speak(" if no? kindly choose a different destination");
+emic.setRate(80);
+emic.speak("now move two steps forward,and you have reached the
+washroom");
+}
+
+}
+emic.setVolume(10);
+//Reading rfid tags
+if (rfid.isCard()) {
+if (rfid.readCardSerial()) {
+if (rfid.serNum[0] != serNum0
+&& rfid.serNum[1] != serNum1
+&& rfid.serNum[2] != serNum2
+&& rfid.serNum[3] != serNum3
+&& (rfid.serNum[4] != serNum4)
+)
+
+/* With a new cardnumber, show it. */
+Serial.println(" ");
+Serial.println("Card found");
+serNum0 = rfid.serNum[0];
+serNum1 = rfid.serNum[1];
+serNum2 = rfid.serNum[2];
+
+
+serNum3 = rfid.serNum[3];
+serNum4 = rfid.serNum[4];
+
+Serial.println(" ");
+Serial.println("Cardnumber:");
+Serial.print("Dec: ");
+Serial.print(rfid.serNum[0],DEC);
+emic.setVolume(15);
+if (serNum0 == 4 ) {
+Serial.print("\n tag 1- Room 1");
+emic.speak ( "Your current location is Room 1 ");
+emic.speak ( "Press a key on the keypad to determine your destination
+");
+};
+if (serNum0 == 195 ) {
+Serial.print("\n tag 2- Room 2");
+emic.speak ( "Your current location is Room 2 ");
+emic.speak ( "Press a key on the keypad to determine your destination");
+}
+if (serNum0 == 81 ) {
+Serial.print("\n tag 3- Room 3");
+emic.speak ( "Your current location is Room 3 ");
+emic.speak ( "Press a key on the keypad to determine your destination");
+}
+if (serNum0 == 73 ) {
+
+
+Serial.print("\n tag 4- Room 4");
+emic.speak ( "Your current location is Room 4 ");
+emic.speak ( "Press a key on the keypad to determine your destination");
+
+}
+if (serNum0 == 148 ) {
+Serial.print("\n tag 5- Room 5");
+emic.speak ( "Your current location is Room 5 ");
+emic.speak ( "Press a key on the keypad to determine your destination");
+
+}
+if (serNum0 == 153 ) {
+Serial.print("\n tag 6- Room 6");
+emic.speak ( "Your current location is Room 6 ");
+emic.speak ( "Press a key on the keypad to determine your destination");
+
+}
+if (serNum0 == 185 ) {
+Serial.print("\n tag 7- Washroom");
+emic.speak ( "Your current location is the washroom ");
+emic.speak ( "Press a key on the keypad to determine your destination");
+
+}
+
+//ultrasonic sensor config
+
+
+long duration,distance;
+digitalWrite(trigPin,LOW);
+delayMicroseconds(2);
+digitalWrite(trigPin,HIGH);
+delayMicroseconds(10);
+digitalWrite(trigPin,LOW);
+duration = pulseIn(echoPin,HIGH);
+distance = (duration/2) /29.1;
+
+if (distance >= 300 || distance <= 2 ) {
+
+}
+else{
+Serial.print(" obstacle " );
+Serial.print( distance);
+Serial.print(" centimetres away \n" );
+emic.speak ("obstacle ahead of you, move one step to your right");
+
+}
+delay(500);
+
+}} }
